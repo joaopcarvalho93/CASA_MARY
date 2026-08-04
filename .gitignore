@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# temporários
+*.tmp
+_probe.txt
+
+# ficheiros locais de trabalho (backups do sheet, etc.)
+*.xlsx
+*.csv
