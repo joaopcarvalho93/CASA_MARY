@@ -135,6 +135,17 @@
   .catrow .sub{color:var(--muted);font-size:12px;margin-top:2px;display:flex;justify-content:space-between;}
   .catbar{height:7px;border-radius:999px;background:var(--cream-2);margin-top:8px;overflow:hidden;}
   .catbar > span{display:block;height:100%;background:var(--green);border-radius:999px;}
+  .catrow{cursor:pointer;}
+  .catrow .sub{display:flex;justify-content:space-between;}
+  .catrow .tp{color:var(--green-d);font-weight:700;}
+  .chev{display:inline-block;color:var(--muted);width:14px;transition:transform .15s;}
+  .catitems{margin-top:10px;border-top:1px solid var(--line);padding-top:6px;}
+  .ci{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);}
+  .ci:last-child{border-bottom:0;}
+  .ci-nm{font-size:13.5px;}
+  .ci-r{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:13.5px;}
+  .ci-st{font-size:10.5px;color:var(--muted);font-weight:700;}
+  .ci-real{font-size:10px;font-weight:800;background:var(--green-pill);color:var(--green-d);padding:1px 6px;border-radius:999px;}
   .note{color:var(--muted);font-size:12px;text-align:center;margin-top:14px;}
 </style>
 </head>
@@ -298,17 +309,34 @@ function renderBudget(b){
        '<div class="kpi"><div class="v">'+eur(Math.max(0,b.alvo-b.gasto))+'</div><div class="k">Disponível</div></div>'+
      '</div>';
   var maxEst=Math.max.apply(null,b.categorias.map(function(c){return c.estimado;}).concat([1]));
-  b.categorias.forEach(function(c){
+  b.categorias.forEach(function(c,idx){
     var w=Math.round(c.estimado/maxEst*100);
-    h+='<div class="catrow">'+
-         '<div class="ct"><span class="nm">'+c.cat+'</span><span class="est">'+eur(c.estimado)+'</span></div>'+
+    var its=(c.lista||[]).slice().sort(function(a,b){return (b.estimado||0)-(a.estimado||0);}).map(function(it){
+      var val = it.real ? eur(it.real) : eur(it.estimado);
+      var pago = it.real ? '<span class="ci-real">pago</span>' : '';
+      var st = it.estado ? '<span class="ci-st">'+it.estado+'</span>' : '';
+      return '<div class="ci"><span class="ci-nm">'+it.item+'</span>'+
+             '<span class="ci-r">'+st+pago+'<b>'+val+'</b></span></div>';
+    }).join('');
+    h+='<div class="catrow" onclick="toggleCat('+idx+')">'+
+         '<div class="ct"><span class="nm"><span class="chev" id="chev'+idx+'">▸</span> '+c.cat+'</span><span class="est">'+eur(c.estimado)+'</span></div>'+
          '<div class="catbar"><span style="width:'+w+'%"></span></div>'+
-         '<div class="sub"><span>'+c.fechados+'/'+c.itens+' fechados · gasto '+eur(c.gasto)+'</span></div>'+
+         '<div class="sub"><span>'+c.fechados+'/'+c.itens+' fechados · gasto '+eur(c.gasto)+'</span><span class="tp" id="tp'+idx+'">ver itens</span></div>'+
+         '<div class="catitems" id="cat'+idx+'" style="display:none">'+its+'</div>'+
        '</div>';
   });
   h+='<div class="note">O “estimado” usa a opção escolhida quando existe, senão o preço estimado. '+
      'O “gasto” conta o Custo real dos itens já comprados.</div>';
   document.getElementById('budget').innerHTML=h;
+}
+
+function toggleCat(i){
+  var el=document.getElementById('cat'+i), ch=document.getElementById('chev'+i), tp=document.getElementById('tp'+i);
+  if(!el) return;
+  var abrir = el.style.display==='none';
+  el.style.display = abrir ? 'block' : 'none';
+  if(ch) ch.style.transform = abrir ? 'rotate(90deg)' : 'none';
+  if(tp) tp.textContent = abrir ? 'fechar' : 'ver itens';
 }
 
 function escolherPessoa(p){

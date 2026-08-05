@@ -291,7 +291,7 @@ function appGetBudget() {
   const cVal = col_(sh, L.valorGastar), cReal = col_(sh, L.custoReal), cEst = col_(sh, L.estado);
   const nL = ultimaLinha_(sh, cItem);
 
-  const cats = {}; // divisao -> {estimado, gasto, itens, fechados}
+  const cats = {}; // divisao -> {estimado, gasto, itens, fechados, lista}
   let estimado = 0, gasto = 0, nItens = 0, nFechados = 0;
 
   if (nL >= 2) {
@@ -301,12 +301,14 @@ function appGetBudget() {
       const div = String(v[cDiv-1]).trim() || '—';
       const est = num_(v[cVal-1]);
       const real = num_(v[cReal-1]);
-      const fechado = String(v[cEst-1]).trim() === ESTADO_FECHADO;
-      cats[div] = cats[div] || {estimado:0, gasto:0, itens:0, fechados:0};
+      const estado = String(v[cEst-1]).trim();
+      const fechado = estado === ESTADO_FECHADO;
+      cats[div] = cats[div] || {estimado:0, gasto:0, itens:0, fechados:0, lista:[]};
       cats[div].estimado += est;
       cats[div].gasto += real;
       cats[div].itens += 1;
       if (fechado) cats[div].fechados += 1;
+      cats[div].lista.push({item:item, estimado:est, real:real, estado:estado});
       estimado += est; gasto += real; nItens += 1; if (fechado) nFechados += 1;
     });
   }
@@ -326,7 +328,7 @@ function appGetBudget() {
   }
 
   const catArr = Object.keys(cats).sort().map(k => ({
-    cat:k, estimado:cats[k].estimado, gasto:cats[k].gasto, itens:cats[k].itens, fechados:cats[k].fechados
+    cat:k, estimado:cats[k].estimado, gasto:cats[k].gasto, itens:cats[k].itens, fechados:cats[k].fechados, lista:cats[k].lista
   }));
 
   return {alvo:alvo, estimado:estimado, gasto:gasto, margem:alvo - estimado,
